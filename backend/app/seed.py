@@ -88,7 +88,7 @@ Output: [0, 1]  (because 2 + 7 = 9)
     return []
 """,
             test_code="""assert two_sum_sorted([2, 7, 11, 15], 9) == [0, 1]
-assert two_sum_sorted([1, 2, 3, 4, 5], 6) == [1, 3]
+assert two_sum_sorted([1, 2, 3, 4, 5], 9) == [3, 4]
 assert two_sum_sorted([-3, -1, 0, 1, 5], 4) == [1, 4]
 assert two_sum_sorted([1, 3, 5, 7], 10) == [1, 3]""",
             hints="Start with pointers at both ends. If sum is too small, move left pointer right. If too large, move right pointer left.",

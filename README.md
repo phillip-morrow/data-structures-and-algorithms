@@ -1,6 +1,6 @@
 # DSA Practice
 
-A full-stack app for mastering data structures and algorithms through structured lessons and hands-on coding problems. Built to get you interview-ready.
+A full-stack app for mastering data structures and algorithms through structured lessons and hands-on coding problems.
 
 ## Stack
 

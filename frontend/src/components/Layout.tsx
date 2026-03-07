@@ -7,7 +7,7 @@ export default function Layout() {
         <Link to="/" className="logo">
           <span className="logo-icon">&lt;/&gt;</span> DSA Practice
         </Link>
-        <p className="tagline">Master algorithms. Crush interviews.</p>
+        <p className="tagline">Master algorithms. Build deep understanding.</p>
       </header>
       <main className="main">
         <Outlet />
