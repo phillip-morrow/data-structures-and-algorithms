@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import Editor from "@monaco-editor/react";
 import ReactMarkdown from "react-markdown";
-import { api, Problem, RunResult } from "../api";
+import { api, Problem, RunResult, Submission } from "../api";
 
 export default function ProblemPage() {
   const { problemSlug } = useParams<{ problemSlug: string }>();
@@ -11,9 +11,10 @@ export default function ProblemPage() {
   const [result, setResult] = useState<RunResult | null>(null);
   const [running, setRunning] = useState(false);
   const [showHints, setShowHints] = useState(false);
-  const [activeTab, setActiveTab] = useState<"description" | "results">(
-    "description"
-  );
+  const [submissions, setSubmissions] = useState<Submission[]>([]);
+  const [activeTab, setActiveTab] = useState<
+    "description" | "results" | "history"
+  >("description");
 
   useEffect(() => {
     if (problemSlug) {
@@ -24,6 +25,7 @@ export default function ProblemPage() {
         setShowHints(false);
         setActiveTab("description");
       });
+      api.getSubmissions(problemSlug).then(setSubmissions);
     }
   }, [problemSlug]);
 
@@ -51,6 +53,7 @@ export default function ProblemPage() {
     try {
       const r = await api.submitCode(problemSlug, code);
       setResult(r);
+      api.getSubmissions(problemSlug).then(setSubmissions);
     } catch {
       setResult({
         passed: false,
@@ -110,6 +113,15 @@ export default function ProblemPage() {
                 <span className="fail-icon">&#10007;</span>
               ))}
           </button>
+          <button
+            className={activeTab === "history" ? "tab active" : "tab"}
+            onClick={() => setActiveTab("history")}
+          >
+            History{" "}
+            {submissions.length > 0 && (
+              <span className="history-count">({submissions.length})</span>
+            )}
+          </button>
         </div>
 
         {activeTab === "description" ? (
@@ -127,7 +139,7 @@ export default function ProblemPage() {
               </div>
             )}
           </div>
-        ) : (
+        ) : activeTab === "results" ? (
           <div className="results-panel">
             {running ? (
               <div className="running">Running your code...</div>
@@ -171,6 +183,32 @@ export default function ProblemPage() {
               <p className="no-results">
                 Run your code to see results
               </p>
+            )}
+          </div>
+        ) : (
+          <div className="history-panel">
+            {submissions.length === 0 ? (
+              <p className="no-results">
+                No submissions yet. Submit your code to track your progress.
+              </p>
+            ) : (
+              <div className="submissions-list">
+                {submissions.map((s) => (
+                  <div
+                    key={s.id}
+                    className={`submission-entry ${
+                      s.passed ? "submission-pass" : "submission-fail"
+                    }`}
+                  >
+                    <span className="submission-status">
+                      {s.passed ? "\u2713 Passed" : "\u2717 Failed"}
+                    </span>
+                    <span className="submission-date">
+                      {new Date(s.submitted_at).toLocaleString()}
+                    </span>
+                  </div>
+                ))}
+              </div>
             )}
           </div>
         )}

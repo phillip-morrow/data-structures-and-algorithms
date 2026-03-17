@@ -13,6 +13,7 @@ export default function LessonPage() {
   const { lessonSlug } = useParams<{ lessonSlug: string }>();
   const [lesson, setLesson] = useState<Lesson | null>(null);
   const [problems, setProblems] = useState<ProblemSummary[]>([]);
+  const [solvedSlugs, setSolvedSlugs] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -20,9 +21,11 @@ export default function LessonPage() {
       Promise.all([
         api.getLesson(lessonSlug),
         api.getProblems(lessonSlug),
-      ]).then(([l, p]) => {
+        api.getSolvedSlugs(lessonSlug),
+      ]).then(([l, p, solved]) => {
         setLesson(l);
         setProblems(p);
+        setSolvedSlugs(new Set(solved));
         setLoading(false);
       });
     }
@@ -57,6 +60,9 @@ export default function LessonPage() {
                 {p.difficulty}
               </span>
               <span className="problem-title">{p.title}</span>
+              {solvedSlugs.has(p.slug) && (
+                <span className="solved-badge">Solved</span>
+              )}
             </Link>
           ))}
         </div>
