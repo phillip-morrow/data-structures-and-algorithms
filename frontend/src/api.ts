@@ -76,6 +76,14 @@ export interface RunResult {
   test_results: TestResult[];
 }
 
+export interface Submission {
+  id: number;
+  problem_id: number;
+  passed: boolean;
+  output: string;
+  submitted_at: string;
+}
+
 export const api = {
   getTopics: () => get<Topic[]>("/topics"),
   getLessons: (topicSlug: string) =>
@@ -88,4 +96,8 @@ export const api = {
     post<RunResult>(`/problems/${problemSlug}/run`, { code }),
   submitCode: (problemSlug: string, code: string) =>
     post<RunResult>(`/problems/${problemSlug}/submit`, { code }),
+  getSubmissions: (problemSlug: string) =>
+    get<Submission[]>(`/problems/${problemSlug}/submissions`),
+  getSolvedSlugs: (lessonSlug: string) =>
+    get<string[]>(`/lessons/${lessonSlug}/solved`),
 };

@@ -89,6 +89,22 @@ async def list_problems(lesson_slug: str, db: AsyncSession = Depends(get_db)):
     return lesson.problems
 
 
+@router.get("/lessons/{lesson_slug}/solved")
+async def get_solved_slugs(lesson_slug: str, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(
+        select(Lesson).where(Lesson.slug == lesson_slug).options(
+            selectinload(Lesson.problems).selectinload(Problem.submissions)
+        )
+    )
+    lesson = result.scalars().first()
+    if not lesson:
+        raise HTTPException(404, "Lesson not found")
+    return [
+        p.slug for p in lesson.problems
+        if any(s.passed for s in p.submissions)
+    ]
+
+
 @router.get("/problems/{problem_slug}", response_model=ProblemOut)
 async def get_problem(problem_slug: str, db: AsyncSession = Depends(get_db)):
     result = await db.execute(
@@ -113,7 +129,7 @@ async def run_code(problem_slug: str, body: SubmissionIn, db: AsyncSession = Dep
     return run_result
 
 
-@router.post("/problems/{problem_slug}/submit", response_model=SubmissionOut)
+@router.post("/problems/{problem_slug}/submit", response_model=RunResult)
 async def submit_code(problem_slug: str, body: SubmissionIn, db: AsyncSession = Depends(get_db)):
     result = await db.execute(
         select(Problem).where(Problem.slug == problem_slug)
@@ -132,8 +148,8 @@ async def submit_code(problem_slug: str, body: SubmissionIn, db: AsyncSession = 
     )
     db.add(submission)
     await db.commit()
-    await db.refresh(submission)
-    return submission
+
+    return run_result
 
 
 @router.get("/problems/{problem_slug}/submissions", response_model=list[SubmissionOut])
